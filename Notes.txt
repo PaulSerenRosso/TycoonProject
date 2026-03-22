@@ -1,1 +1,15 @@
-https://github.com/vovgou/loxodon-framework
+event only c#
+avec id pour les instances
+view bind event 
+view call use case
+
+scriptable object avec un DTO
+
+
+moq for unit test 
+
+unit test c# for entities 
+
+edit mode for bridge
+
+play mode for monobheavior 
