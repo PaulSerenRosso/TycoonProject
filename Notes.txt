@@ -15,3 +15,5 @@ edit mode for bridge
 play mode for monobheavior 
 
 fantasia neo dimension
+
+reflechir au presenters, repo, view voir ce qu'on utilise pour each avec la pipeline u, comment on créer les entities ? 
