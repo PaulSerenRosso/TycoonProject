@@ -1,20 +1,21 @@
 ﻿//Interface for non-generic access
 
-/*
-public interface IServiceEntry
+
+using System;
+
+public interface IDependencyEntry
 {
-    object Resolve(ServiceContainer container);
+    object Resolve(DependenciesManager container);
     Type ServiceType { get; }
 }
 
 // Generic implementation - maintains type safety
-public class ServiceEntry<T> : IServiceEntry
+public class DependencyEntry<T> : IDependencyEntry
 {
     public Type ServiceType => typeof(T);
     
-    public object Resolve(ServiceContainer container)
+    public object Resolve(DependenciesManager container)
     {
         return container.Resolve<T>(); // Uses generic path internally
     }
 }
-*/

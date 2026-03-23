@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 
-/*
 namespace Core.Events
 {
-    public class EventBus : IEventBus
+    public class EventBus 
     {
         private readonly Dictionary<Type, List<Delegate>> _handlers = new Dictionary<Type, List<Delegate>>();
 
@@ -58,4 +57,3 @@ namespace Core.Events
         }
     }
 }
-*/

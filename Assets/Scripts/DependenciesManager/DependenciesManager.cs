@@ -1,4 +1,4 @@
-﻿/*/
+﻿
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,12 +6,12 @@ using System.Reflection;
 using UnityEngine;
 
 
-public class ServiceContainer : MonoBehaviour
+public class DependenciesManager : MonoBehaviour
 {
-    private static ServiceContainer _instance;
+    private static DependenciesManager _instance;
     
     // Generic storage - no boxing!
-    private static class ServiceStorage<T>
+    private static class DependencyStorage<T>
     {
         public static T Instance;
         public static Func<T> Factory;
@@ -19,19 +19,19 @@ public class ServiceContainer : MonoBehaviour
     }
 
     // Non-generic lookup for reflection scenarios
-    private Dictionary<Type, IServiceEntry> _typeMap = new Dictionary<Type, IServiceEntry>();
+    private Dictionary<Type, IDependencyEntry> _typeMap = new Dictionary<Type, IDependencyEntry>();
 
-    public static ServiceContainer Instance
+    public static DependenciesManager Instance
     {
         get
         {
             if (_instance == null)
             {
-                _instance = FindObjectOfType<ServiceContainer>();
+                _instance = FindObjectOfType<DependenciesManager>();
                 if (_instance == null)
                 {
                     GameObject go = new GameObject("ServiceContainer");
-                    _instance = go.AddComponent<ServiceContainer>();
+                    _instance = go.AddComponent<DependenciesManager>();
                     DontDestroyOnLoad(go);
                 }
             }
@@ -42,52 +42,52 @@ public class ServiceContainer : MonoBehaviour
     #region Registration (Generic - No Boxing)
     public void Register<T>(T service)
     {
-        ServiceStorage<T>.Instance = service;
-        ServiceStorage<T>.IsRegistered = true;
-        _typeMap[typeof(T)] = new ServiceEntry<T>();
+        DependencyStorage<T>.Instance = service;
+        DependencyStorage<T>.IsRegistered = true;
+        _typeMap[typeof(T)] = new DependencyEntry<T>();
     }
 
     public void RegisterFactory<T>(Func<T> factory)
     {
-        ServiceStorage<T>.Factory = factory;
-        ServiceStorage<T>.IsRegistered = true;
-        _typeMap[typeof(T)] = new ServiceEntry<T>();
+        DependencyStorage<T>.Factory = factory;
+        DependencyStorage<T>.IsRegistered = true;
+        _typeMap[typeof(T)] = new DependencyEntry<T>();
     }
 
     public void RegisterTransient<T>() where T : class, new()
     {
-        ServiceStorage<T>.Factory = () => CreateWithConstructorInjection<T>();
-        ServiceStorage<T>.IsRegistered = true;
-        _typeMap[typeof(T)] = new ServiceEntry<T>();
+        DependencyStorage<T>.Factory = () => CreateWithConstructorInjection<T>();
+        DependencyStorage<T>.IsRegistered = true;
+        _typeMap[typeof(T)] = new DependencyEntry<T>();
     }
 
     public void RegisterTransient<TInterface, TImplementation>() 
         where TImplementation : class, TInterface, new()
     {
-        ServiceStorage<TInterface>.Factory = () => CreateWithConstructorInjection<TImplementation>();
-        ServiceStorage<TInterface>.IsRegistered = true;
-        _typeMap[typeof(TInterface)] = new ServiceEntry<TInterface>();
+        DependencyStorage<TInterface>.Factory = () => CreateWithConstructorInjection<TImplementation>();
+        DependencyStorage<TInterface>.IsRegistered = true;
+        _typeMap[typeof(TInterface)] = new DependencyEntry<TInterface>();
     }
     #endregion
 
     #region Resolution (Generic - No Boxing)
     public T Resolve<T>()
     {
-        if (!ServiceStorage<T>.IsRegistered)
+        if (!DependencyStorage<T>.IsRegistered)
         {
             throw new InvalidOperationException($"Service of type {typeof(T)} not registered");
         }
 
         // Singleton
-        if (ServiceStorage<T>.Instance != null)
+        if (DependencyStorage<T>.Instance != null)
         {
-            return ServiceStorage<T>.Instance;
+            return DependencyStorage<T>.Instance;
         }
 
         // Factory
-        if (ServiceStorage<T>.Factory != null)
+        if (DependencyStorage<T>.Factory != null)
         {
-            return ServiceStorage<T>.Factory();
+            return DependencyStorage<T>.Factory();
         }
 
         throw new InvalidOperationException($"Service of type {typeof(T)} has no implementation");
@@ -97,7 +97,7 @@ public class ServiceContainer : MonoBehaviour
     {
         service = default(T);
         
-        if (!ServiceStorage<T>.IsRegistered)
+        if (!DependencyStorage<T>.IsRegistered)
             return false;
 
         try
@@ -133,7 +133,7 @@ public class ServiceContainer : MonoBehaviour
         for (int i = 0; i < parameters.Length; i++)
         {
             var paramType = parameters[i].ParameterType;
-            if (_typeMap.TryGetValue(paramType, out IServiceEntry entry))
+            if (_typeMap.TryGetValue(paramType, out IDependencyEntry entry))
             {
                 args[i] = entry.Resolve(this);
             }
@@ -172,7 +172,7 @@ public class ServiceContainer : MonoBehaviour
 
         foreach (var property in properties)
         {
-            if (_typeMap.TryGetValue(property.PropertyType, out IServiceEntry entry))
+            if (_typeMap.TryGetValue(property.PropertyType, out IDependencyEntry entry))
             {
                 try
                 {
@@ -205,7 +205,7 @@ public class ServiceContainer : MonoBehaviour
 
         foreach (var field in fields)
         {
-            if (_typeMap.TryGetValue(field.FieldType, out IServiceEntry entry))
+            if (_typeMap.TryGetValue(field.FieldType, out IDependencyEntry entry))
             {
                 try
                 {
@@ -225,4 +225,3 @@ public class ServiceContainer : MonoBehaviour
     }
     #endregion
 }
-*/

@@ -1,13 +1,14 @@
-﻿using UnityEngine;
+﻿using System.ComponentModel.Design;
+using UnityEngine;
 
 // Base class for MonoBehaviours that need DI
-/*
+
 public abstract class InjectableMonoBehaviour : MonoBehaviour
 {
     protected virtual void Awake()
     {
-        ServiceContainer.Instance.InjectProperties(this);
-        ServiceContainer.Instance.InjectFields(this);
+        DependenciesManager.Instance.InjectProperties(this);
+        DependenciesManager.Instance.InjectFields(this);
     }
 }
 
@@ -19,9 +20,8 @@ public class AutoInject : MonoBehaviour
         var components = GetComponents<MonoBehaviour>();
         foreach (var component in components)
         {
-            ServiceContainer.Instance.InjectProperties(component);
-            ServiceContainer.Instance.InjectFields(component);
+            DependenciesManager.Instance.InjectProperties(component);
+            DependenciesManager.Instance.InjectFields(component);
         }
     }
 }
-*/
