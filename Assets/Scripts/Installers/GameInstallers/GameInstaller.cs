@@ -7,13 +7,16 @@ public abstract class GameInstaller : MonoBehaviour
     private static void Initialize()
     {
         // Find and execute all project installers from Resources
-        var installers = Resources.LoadAll<GameInstaller>("Installers");
-        foreach (var installer in installers)
+        var installer = Resources.LoadAll<GameInstaller>("GameInstaller");
+
+        if (installer.Length == 0)
         {
-            var instance = Instantiate(installer);
-            DontDestroyOnLoad(instance.gameObject);
-            instance.Install(DependenciesManager.Instance);
+            throw new System.Exception("No GameInstaller found in Resources");
         }
+
+        var instance = Instantiate(installer[0]);
+        DontDestroyOnLoad(instance.gameObject);
+        instance.Install(DependenciesManager.Instance);
     }
 
     public abstract void Install(DependenciesManager container);
