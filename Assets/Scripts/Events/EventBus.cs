@@ -22,7 +22,7 @@ namespace Core.Events
                     }
                     catch (Exception ex)
                     {
-                        UnityEngine.Debug.LogError($"Error handling event {eventType.Name}: {ex.Message}");
+                        throw new Exception("Error handling event", ex);
                     }
                 }
             }

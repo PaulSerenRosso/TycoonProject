@@ -16,7 +16,7 @@ public abstract class SceneInstaller : MonoBehaviour
     {
         Uninstall(_container);
     }
-
+    
     public abstract void Install(DependenciesManager container);
     public virtual void Uninstall(DependenciesManager container) { }
 }
