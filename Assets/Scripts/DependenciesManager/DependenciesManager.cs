@@ -30,7 +30,7 @@ public class DependenciesManager : MonoBehaviour
                 _instance = FindObjectOfType<DependenciesManager>();
                 if (_instance == null)
                 {
-                    GameObject go = new GameObject("ServiceContainer");
+                    GameObject go = new GameObject("DependenciesManager");
                     _instance = go.AddComponent<DependenciesManager>();
                     DontDestroyOnLoad(go);
                 }
@@ -40,9 +40,9 @@ public class DependenciesManager : MonoBehaviour
     }
 
     #region Registration (Generic - No Boxing)
-    public void Register<T>(T service)
+    public void Register<T>(T dependency)
     {
-        DependencyStorage<T>.Instance = service;
+        DependencyStorage<T>.Instance = dependency;
         DependencyStorage<T>.IsRegistered = true;
         _typeMap[typeof(T)] = new DependencyEntry<T>();
     }
@@ -75,7 +75,7 @@ public class DependenciesManager : MonoBehaviour
     {
         if (!DependencyStorage<T>.IsRegistered)
         {
-            throw new InvalidOperationException($"Service of type {typeof(T)} not registered");
+            throw new InvalidOperationException($"Dependency of type {typeof(T)} not registered");
         }
 
         // Singleton
@@ -90,19 +90,19 @@ public class DependenciesManager : MonoBehaviour
             return DependencyStorage<T>.Factory();
         }
 
-        throw new InvalidOperationException($"Service of type {typeof(T)} has no implementation");
+        throw new InvalidOperationException($"Dependency of type {typeof(T)} has no implementation");
     }
 
-    public bool TryResolve<T>(out T service)
+    public bool TryResolve<T>(out T dependency)
     {
-        service = default(T);
+        dependency = default(T);
         
         if (!DependencyStorage<T>.IsRegistered)
             return false;
 
         try
         {
-            service = Resolve<T>();
+            dependency = Resolve<T>();
             return true;
         }
         catch
