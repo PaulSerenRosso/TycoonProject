@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Logger;
 
 namespace Core.Events
 {
@@ -30,7 +31,11 @@ namespace Core.Events
 
         public void Subscribe<T>(Action<T> handler) where T : class
         {
-            if (handler == null) return;
+            if (handler == null)
+            {
+                Log.Default.Log(new LogEntry(LogLevel.Error, "Handler is null", typeof(EventBus).Name));
+                return;
+            }
 
             var eventType = typeof(T);
             if (!_handlers.ContainsKey(eventType))
@@ -43,7 +48,11 @@ namespace Core.Events
 
         public void Unsubscribe<T>(Action<T> handler) where T : class
         {
-            if (handler == null) return;
+            if (handler == null)
+            {
+                Log.Default.Log(new LogEntry(LogLevel.Error, "Handler is null", typeof(EventBus).Name));
+                return;
+            }
 
             var eventType = typeof(T);
             if (_handlers.TryGetValue(eventType, out var handlers))
@@ -53,6 +62,11 @@ namespace Core.Events
                 {
                     _handlers.Remove(eventType);
                 }
+            }
+            else
+            {
+                Log.Default.Log(new LogEntry(LogLevel.Error, $"No subscribers found for event type: {eventType.Name}",
+                    typeof(EventBus).Name));
             }
         }
     }

@@ -1,13 +1,12 @@
-﻿using System;
+﻿
 using NUnit.Framework;
 using UnityEngine;
-using UnityEngine.TestTools;
-using System.Reflection;
+
 
 namespace Tests
 {
     [TestFixture]
-    public class DependenciesManagerTests
+    public class DependenciesManagerTests : EditorBaseTest
     {
         private DependenciesManager _dependenciesManager;
         private GameObject _gameObject;
@@ -30,10 +29,6 @@ namespace Tests
 
         public class ServiceWithDependency
         {
-            public ServiceWithDependency()
-            {
-                
-            }
             public ITestService TestService { get; }
 
             public ServiceWithDependency(ITestService testService)
@@ -84,15 +79,24 @@ namespace Tests
         {
             _gameObject = new GameObject("TestDependenciesManager");
             _dependenciesManager = _gameObject.AddComponent<DependenciesManager>();
+         
         }
 
         [TearDown]
         public void TearDown()
-        {
+        {   
+            
+            // Explicitly unregister before destroying
+            if (_dependenciesManager != null)
+            {
+                _dependenciesManager.UnregisterAll();
+            }
+            
             if (_gameObject != null)
             {
                 UnityEngine.Object.DestroyImmediate(_gameObject);
             }
+            
         }
 
         #region Singleton Instance Tests
@@ -103,7 +107,7 @@ namespace Tests
             // Act
             var instance1 = DependenciesManager.Instance;
             var instance2 = DependenciesManager.Instance;
-
+           
             // Assert
             Assert.AreSame(instance1, instance2);
         }
@@ -164,29 +168,18 @@ namespace Tests
             Assert.IsNotNull(resolved);
             Assert.AreEqual("Default", resolved.Value);
         }
-
-        [Test]
-        public void RegisterTransient_WithInterfaceAndImplementation_AllowsResolution()
-        {
-            // Act
-            _dependenciesManager.RegisterTransient<ITestService, TestService>();
-            var resolved = _dependenciesManager.Resolve<ITestService>();
-
-            // Assert
-            Assert.IsNotNull(resolved);
-            Assert.IsInstanceOf<TestService>(resolved);
-            Assert.AreEqual("Test Service", resolved.GetMessage());
-        }
+        
 
         #endregion
 
         #region Resolution Tests
 
         [Test]
-        public void Resolve_WithUnregisteredService_ThrowsException()
+        public void Resolve_WithUnregisteredService_Error()
         {
-            Assert.Throws<InvalidOperationException>(() => 
-                _dependenciesManager.Resolve<ITestService>());
+            _dependenciesManager.Resolve<ITestService>();
+            Assert.IsTrue(TestLogger.HasErrorContaining());
+      
         }
 
         [Test]
@@ -200,7 +193,7 @@ namespace Tests
 
             // Assert
             Assert.IsTrue(result);
-            Assert.IsNotNull(service);
+            Assert.IsFalse(TestLogger.HasErrorContaining());
         }
 
         [Test]
@@ -265,16 +258,12 @@ namespace Tests
         }
 
         [Test]
-        public void CreateWithConstructorInjection_WithMissingDependency_ThrowsException()
+        public void CreateWithConstructorInjection_WithMissingDependency_Error()
         {
             // Arrange
             _dependenciesManager.RegisterTransient<ServiceWithDependency>();
-
-            // Act & Assert
-            var exception = Assert.Throws<InvalidOperationException>(() => 
-                _dependenciesManager.Resolve<ServiceWithDependency>());
-            
-            Assert.That(exception.Message, Contains.Substring("Cannot resolve parameter"));
+            _dependenciesManager.Resolve<ServiceWithDependency>();
+            Assert.IsTrue(TestLogger.HasErrorContaining());
         }
 
         #endregion
@@ -298,13 +287,14 @@ namespace Tests
         }
 
         [Test]
-        public void InjectProperties_WithUnregisteredOptionalDependency_DoesNotThrow()
+        public void InjectProperties_WithUnregisteredOptionalDependency_DoesNotError()
         {
             // Arrange
             var target = _gameObject.AddComponent<TestMonoBehaviour>();
 
-            // Act & Assert
-            Assert.DoesNotThrow(() => _dependenciesManager.InjectProperties(target));
+
+            _dependenciesManager.InjectProperties(target);
+            Assert.IsTrue(!TestLogger.HasErrorContaining());
             Assert.IsNull(target.OptionalService);
         }
 

@@ -1,11 +1,12 @@
 using System;
 using NUnit.Framework;
 using Core.Events;
+using Tests;
 
 namespace Core.Events.Tests
 {
     [TestFixture]
-    public class EventBusTests
+    public class EventBusTests : EditorBaseTest
     {
         private EventBus _eventBus;
         
@@ -43,10 +44,10 @@ namespace Core.Events.Tests
         }
 
         [Test]
-        public void Subscribe_WithNullHandler_DoesNotThrow()
+        public void Subscribe_WithNullHandler_DoesError()
         {
-            // Act & Assert
-            Assert.DoesNotThrow(() => _eventBus.Subscribe<TestEvent>(null));
+            _eventBus.Subscribe<TestEvent>(null);
+            Assert.IsTrue(TestLogger.HasErrorContaining());
         }
 
         [Test]
@@ -88,7 +89,7 @@ namespace Core.Events.Tests
         {
             // Arrange
             var testEvent = new TestEvent { Message = "Test" };
-
+            _eventBus.Publish(testEvent);
             // Act & Assert
             Assert.DoesNotThrow(() => _eventBus.Publish(testEvent));
         }
@@ -131,20 +132,21 @@ namespace Core.Events.Tests
         }
 
         [Test]
-        public void Unsubscribe_WithNullHandler_DoesNotThrow()
+        public void Unsubscribe_WithNullHandler_DoesError()
         {
-            // Act & Assert
-            Assert.DoesNotThrow(() => _eventBus.Unsubscribe<TestEvent>(null));
+            _eventBus.Unsubscribe<TestEvent>(null);
+            Assert.IsTrue(TestLogger.HasErrorContaining());
+        
         }
 
         [Test]
-        public void Unsubscribe_WithNonExistentHandler_DoesNotThrow()
+        public void Unsubscribe_WithNonExistentHandler_DoesError()
         {
             // Arrange
             Action<TestEvent> handler = (e) => { };
 
-            // Act & Assert
-            Assert.DoesNotThrow(() => _eventBus.Unsubscribe(handler));
+            _eventBus.Unsubscribe(handler);
+            Assert.IsTrue(TestLogger.HasErrorContaining());
         }
 
         [Test]

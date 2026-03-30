@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Logger;
 using UnityEngine;
 
 
@@ -18,6 +19,7 @@ public class DependenciesManager : MonoBehaviour
         public static bool IsRegistered;
     }
 
+    
     // Non-generic lookup for reflection scenarios
     private Dictionary<Type, IDependencyEntry> _typeMap = new Dictionary<Type, IDependencyEntry>();
 
@@ -40,42 +42,71 @@ public class DependenciesManager : MonoBehaviour
     }
 
     #region Registration (Generic - No Boxing)
-    public void Register<T>(T dependency)
+    public void Register<T>(T dependency) where T : class
     {
         DependencyStorage<T>.Instance = dependency;
         DependencyStorage<T>.IsRegistered = true;
         _typeMap[typeof(T)] = new DependencyEntry<T>();
     }
 
-    public void RegisterFactory<T>(Func<T> factory)
+    public void RegisterFactory<T>(Func<T> factory) where T : class
     {
         DependencyStorage<T>.Factory = factory;
         DependencyStorage<T>.IsRegistered = true;
         _typeMap[typeof(T)] = new DependencyEntry<T>();
     }
 
-    public void RegisterTransient<T>() where T : class, new()
+    public void RegisterTransient<T>() where T : class
     {
         DependencyStorage<T>.Factory = () => CreateWithConstructorInjection<T>();
         DependencyStorage<T>.IsRegistered = true;
         _typeMap[typeof(T)] = new DependencyEntry<T>();
     }
-
-    public void RegisterTransient<TInterface, TImplementation>() 
-        where TImplementation : class, TInterface, new()
+    
+    public void Unregister<T>()
     {
-        DependencyStorage<TInterface>.Factory = () => CreateWithConstructorInjection<TImplementation>();
-        DependencyStorage<TInterface>.IsRegistered = true;
-        _typeMap[typeof(TInterface)] = new DependencyEntry<TInterface>();
+        DependencyStorage<T>.Instance = default(T);
+        DependencyStorage<T>.Factory = null;
+        DependencyStorage<T>.IsRegistered = false;
+        _typeMap.Remove(typeof(T));
     }
+
+    protected virtual void OnDestroy()
+    {
+        UnregisterAll();
+        if (_instance == this)
+        {
+            _instance = null;
+        }
+    }
+    
+    /// <summary>
+    /// Unregisters all dependencies (useful for testing)
+    /// </summary>
+    public void UnregisterAll()
+    {
+        // Get all types before clearing the map
+        var entries = _typeMap.Values.ToArray();
+    
+        // Clear the map first
+        _typeMap.Clear();
+    
+        // Then unregister each type through the generic path
+        foreach (var entry in entries)
+        {
+            entry.Unregister(this);
+        }
+    }
+    
     #endregion
 
     #region Resolution (Generic - No Boxing)
-    public T Resolve<T>()
+    public T Resolve<T>() where T : class
     {
         if (!DependencyStorage<T>.IsRegistered)
         {
-            throw new InvalidOperationException($"Dependency of type {typeof(T)} not registered");
+            Log.Default.Log(new LogEntry(LogLevel.Error, $"Dependency of type {typeof(T)} not registered", "DependenciesManager"));
+            return null;
         }
 
         // Singleton
@@ -89,42 +120,35 @@ public class DependenciesManager : MonoBehaviour
         {
             return DependencyStorage<T>.Factory();
         }
-
-        throw new InvalidOperationException($"Dependency of type {typeof(T)} has no implementation");
+        Log.Default.Log(new LogEntry(LogLevel.Error, $"Dependency of type {typeof(T)} has no implementation", "DependenciesManager"));
+        return null;
     }
 
-    public bool TryResolve<T>(out T dependency)
+    public bool TryResolve<T>(out T dependency) where T : class
     {
-        dependency = default(T);
-        
+        dependency = null;
+
         if (!DependencyStorage<T>.IsRegistered)
             return false;
 
-        try
+
+        dependency = Resolve<T>();
+        if (dependency != null)
         {
-            dependency = Resolve<T>();
             return true;
         }
-        catch
-        {
-            return false;
-        }
+
+        return false;
     }
+
     #endregion
 
     #region Constructor Injection (Optimized)
-    private T CreateWithConstructorInjection<T>() where T : new()
+    private T CreateWithConstructorInjection<T>() where T : class
     {
         var type = typeof(T);
         var constructors = type.GetConstructors();
         
-        // Try parameterless constructor first (fastest path)
-        var parameterlessConstructor = constructors.FirstOrDefault(c => c.GetParameters().Length == 0);
-        if (parameterlessConstructor != null)
-        {
-            return new T();
-        }
-
         // Fall back to DI constructor
         var constructor = constructors.OrderByDescending(c => c.GetParameters().Length).First();
         var parameters = constructor.GetParameters();
@@ -143,8 +167,8 @@ public class DependenciesManager : MonoBehaviour
             }
             else
             {
-                throw new InvalidOperationException(
-                    $"Cannot resolve parameter {parameters[i].Name} of type {paramType} for {type}");
+                Log.Default.Log(new LogEntry(LogLevel.Error, $"Cannot resolve parameter {parameters[i].Name} of type {paramType} for {type}", "DependenciesManager"));
+                return default(T);
             }
         }
 
@@ -174,19 +198,23 @@ public class DependenciesManager : MonoBehaviour
         {
             if (_typeMap.TryGetValue(property.PropertyType, out IDependencyEntry entry))
             {
-                try
-                {
+               
                     var value = entry.Resolve(this);
-                    property.SetValue(target, value);
-                }
-                catch (InvalidOperationException ex)
-                {
-                    var injectAttribute = property.GetCustomAttribute<InjectAttribute>();
-                    if (!injectAttribute.Optional)
+                    if (value != null)
                     {
-                        Debug.LogError($"Failed to inject {property.Name} in {target.name}: {ex.Message}");
+                        property.SetValue(target, value);
                     }
-                }
+                    else
+                    {
+                        var injectAttribute = property.GetCustomAttribute<InjectAttribute>();
+                        if (!injectAttribute.Optional)
+                        {
+                            Debug.LogError($"Failed to inject {property.Name} in {target.name}");
+                        }
+                    }
+
+             
+                
             }
         }
     }
@@ -207,21 +235,23 @@ public class DependenciesManager : MonoBehaviour
         {
             if (_typeMap.TryGetValue(field.FieldType, out IDependencyEntry entry))
             {
-                try
+                var value = entry.Resolve(this);
+                if (value != null)
                 {
-                    var value = entry.Resolve(this);
                     field.SetValue(target, value);
                 }
-                catch (InvalidOperationException ex)
+                else
                 {
                     var injectAttribute = field.GetCustomAttribute<InjectAttribute>();
                     if (!injectAttribute.Optional)
                     {
-                        Debug.LogError($"Failed to inject {field.Name} in {target.name}: {ex.Message}");
+                        Debug.LogError($"Failed to inject {field.Name} in {target.name}");
                     }
                 }
             }
         }
     }
+    
+
     #endregion
 }
