@@ -1,10 +1,13 @@
 using System;
+using Services;
 using UnityEngine;
 
-public class InGameSceneInstaller : MonoBehaviour
+public class InGameSceneInstaller : SceneInstaller
 {
-   protected virtual void Awake()
-   {
-      
-   }
+    public override void Install(DependenciesManager container)
+    {
+        InGameService inGameService = container.CreateWithConstructorInjection<InGameService>();
+        container.Register<IInGameService>(inGameService);
+        
+    }
 }

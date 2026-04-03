@@ -144,7 +144,7 @@ public class DependenciesManager : MonoBehaviour
     #endregion
 
     #region Constructor Injection (Optimized)
-    private T CreateWithConstructorInjection<T>() where T : class
+    public T CreateWithConstructorInjection<T>() where T : class
     {
         var type = typeof(T);
         var constructors = type.GetConstructors();

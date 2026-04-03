@@ -1,6 +1,7 @@
 ﻿
 
 using Core.Events;
+using Services;
 
 namespace Installers.GameInstallers
 {
@@ -10,7 +11,7 @@ namespace Installers.GameInstallers
         {
             EventBus eventBus = new EventBus();
             container.Register(eventBus);
-            
+            container.Register<IInputService>(new InputService());
         }
     }
 }
