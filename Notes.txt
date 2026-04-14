@@ -19,3 +19,25 @@ fantasia neo dimension
 reflechir au presenters, repo, view voir ce qu'on utilise pour each avec la pipeline u, comment on créer les entities ? 
 
 utilise draw.io pour l'uml
+
+ce qui est compliqué avec mon fonctionnement c'est que je usis pas a l'aise avec unity donc j'ai beaucoup de question sur l'implémentation
+
+peut etre que ça serait bien de faire un view prototype de merde en une semaine histoire de degrossir le jeu les features et ensuite de le refacto mais au moins pour se remttre dedans c
+
+c'est comme ça que je ferais en tout cas
+
+c'est cool l'archi mais là j'ai besoin de juste tester les différents truc en mode fast et après quand je serais comme fonctionnent les features je pourrais me scale et appliquer la feature en fonction 
+
+donc project proto separate 
+
+il faudrait poru start le proto une base de concept de game jam
+
+genre game concept simple 48h de boulot art + sound + 
+
+plannification notion ?
+
+notion gdd + technical documentation
+
+figma
+
+concept 
