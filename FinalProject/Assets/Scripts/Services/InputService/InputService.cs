@@ -14,13 +14,12 @@ namespace Services
 
         public void SetEnabledMap(bool enabled, EInputMap map = EInputMap.Player)
         {
-           
             switch (map)
             {
                 case EInputMap.Player:
                 {
-                    if(enabled)
-                    inputActions.Player.Enable();
+                    if (enabled)
+                        inputActions.Player.Enable();
                     else
                         inputActions.Player.Disable();
                     break;
