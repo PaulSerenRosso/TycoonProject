@@ -45,6 +45,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1bb9dd594fc4463793f599c09a0c8ece, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Camera.CameraManagerPlay
+  mainCamera: {fileID: 0}
+  angle: 80
+  startOffsetY: 50
+  startOffsetZ: 10
 --- !u!1 &7374779886559223345
 GameObject:
   m_ObjectHideFlags: 0

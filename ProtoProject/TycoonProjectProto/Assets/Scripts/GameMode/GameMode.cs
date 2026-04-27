@@ -14,11 +14,11 @@ public abstract class GameMode : MonoBehaviour
   protected CameraManager cameraManager;
 
   protected virtual void Awake()
-  { 
-    playerController =  Instantiate(playerControllerPrefab);
-  playerPawn =  Instantiate(playerPawnPrefab, playerStart.transform.position, playerStart.transform.rotation );
-  cameraManager = Instantiate(cameraManagerPrefab);
-  playerPawn.SetCamera(cameraManager);
-  playerController.Possess(playerPawn);
+  {
+    playerController = Instantiate(playerControllerPrefab);
+    playerPawn = Instantiate(playerPawnPrefab, playerStart.transform.position, playerStart.transform.rotation);
+    cameraManager = Instantiate(cameraManagerPrefab);
+    playerPawn.SetCamera(cameraManager);
+    playerController.Possess(playerPawn);
   }
 }
