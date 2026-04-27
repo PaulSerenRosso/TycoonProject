@@ -1,43 +1,32 @@
-event only c#
-avec id pour les instances
-view bind event 
-view call use case
 
-scriptable object avec un DTO
+--------------------------------------------------------------------------
+
+DONE
 
 
-moq for unit test 
+--------------------------------------------------------------------------
 
-unit test c# for entities 
+PRIO
 
-edit mode for bridge
 
-play mode for monobheavior 
+--------------------------------------------------------------------------
 
-fantasia neo dimension
+TODO
 
-reflechir au presenters, repo, view voir ce qu'on utilise pour each avec la pipeline u, comment on créer les entities ? 
+Faire une map ou tu peux te déplacer point par point 
 
-utilise draw.io pour l'uml
+fog of war sur la map 
 
-ce qui est compliqué avec mon fonctionnement c'est que je usis pas a l'aise avec unity donc j'ai beaucoup de question sur l'implémentation
+controller 
 
-peut etre que ça serait bien de faire un view prototype de merde en une semaine histoire de degrossir le jeu les features et ensuite de le refacto mais au moins pour se remttre dedans c
+les controles
 
-c'est comme ça que je ferais en tout cas
+dezoom zoom
 
-c'est cool l'archi mais là j'ai besoin de juste tester les différents truc en mode fast et après quand je serais comme fonctionnent les features je pourrais me scale et appliquer la feature en fonction 
+maps 3d  
 
-donc project proto separate 
+drag and drop la camera pour la déplacer 
 
-il faudrait poru start le proto une base de concept de game jam
+clic sur le camion pour selectionner un radius et anim de déplacement navmesh et quand il a finit
 
-genre game concept simple 48h de boulot art + sound + 
-
-plannification notion ?
-
-notion gdd + technical documentation
-
-figma
-
-concept 
+fog of war
