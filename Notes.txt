@@ -30,3 +30,9 @@ drag and drop la camera pour la déplacer
 clic sur le camion pour selectionner un radius et anim de déplacement navmesh et quand il a finit
 
 fog of war
+
+game manager spawn le joueur *
+
+W, A, S, D → Also pans the camera (like many PC games)
+Move mouse to screen edges → Camera scrolls in that direction
+Right-click + drag
